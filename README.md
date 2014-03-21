@@ -6,6 +6,6 @@ Basic swing program that allows you to move shapes around on screen and resize t
 How to Run
 ==========
 
-Install Scala 2.10.1 or newer
-scalac shapes.scala
-scala MovingShapes (number of shpaes: default is 2)
+Install Scala 2.10.1 or newer 
+<pre><code>scalac shapes.scala
+scala MovingShapes (number of shpaes: default is 2)</code></pre>
