@@ -16,6 +16,8 @@ class MyShape {
 	var y:Int = 0
 	var size:Int = 0
 	var color:Color = Color.black
+  var up = true
+  var left = true
 	// setVisible(true)
 	def paintComponents(g:Graphics){}
 	def hit(xH:Int, yH:Int):Boolean = {
@@ -72,6 +74,8 @@ class Shapes (numShapes:Int) extends JComponent {
   //array of shapes
   var shapes = new  Array[MyShape](numShapes)
 
+  // val animatoinTimer:Timer = NULL
+
   //creates random shapes 
   for(i<-0 until numShapes){
   	val temp = nextInt(2)
@@ -82,8 +86,12 @@ class Shapes (numShapes:Int) extends JComponent {
   	// println("test38f")
   }
 
+  //animates shapes when animation key ('s') is pressed
+  val al = new AnimationListener(shapes, this)
+  val animatoinTimer = new Timer(30, al)
+
   //listens for comands to resize shapes
-  val kl = new TypingListener(shapes, this)
+  val kl = new TypingListener(shapes, this, animatoinTimer)
   addKeyListener(kl)
   setFocusable(true)
   requestFocus()
@@ -96,7 +104,10 @@ class Shapes (numShapes:Int) extends JComponent {
   val dl = new DragListener(shapes, this)
   addMouseMotionListener(dl)
 
+
   setVisible(true)
+
+
 
   //paints all the shapes and turns antialiasing on
   override def paintComponent(g:Graphics){
@@ -163,9 +174,56 @@ class DragListener(shapes:Array[MyShape], shape:Shapes) extends MouseMotionListe
 }
 
 /*
-*	Will increase or decrease the size of the last selected shape based on pressing - and = signs 
+* When animation is running, the shapes will bounce around from wall to wall(side of the screen)
 */
-class TypingListener(shapes:Array[MyShape], shape:Shapes) extends KeyListener {
+class AnimationListener(shapes:Array[MyShape], shape:Shapes) extends ActionListener{
+  override def actionPerformed(e:ActionEvent){
+    for(i<-0 until shapes.length){
+      val cur = shapes(i)
+
+      //does left and right animation
+      if(cur.left){
+        val newX = shapes(i).x - 1
+        if(newX > 0)
+          shapes(i).x = newX
+        else
+          shapes(i).left = false
+      }
+      else {
+        val newX = shapes(i).x + 1
+        if(newX + cur.size < shape.getSize().getWidth)
+          shapes(i).x = newX
+        else
+          shapes(i).left = true
+      }
+
+      //does up and down animation
+      if(cur.up){
+        val newY = shapes(i).y - 1
+        if(newY > 0)
+          shapes(i).y = newY
+        else
+          shapes(i).up = false
+      }
+      else {
+        val newY = shapes(i).y + 1
+        if(newY + cur.size < shape.getSize().getHeight)
+          shapes(i).y = newY
+        else
+          shapes(i).up = true
+      }
+    }
+
+    shape.repaint()
+  }
+}
+
+/*
+*	Will increase or decrease the size of the last selected shape based on pressing - and = signs 
+* Pressing s will start or stop the animation
+*/
+class TypingListener(shapes:Array[MyShape], shape:Shapes, animatoinTimer:Timer) extends KeyListener {
+  var animate = false
 	override def keyTyped(e:KeyEvent){}
 	override def keyPressed(e:KeyEvent){
 		if(e.getKeyChar == '-'){
@@ -177,6 +235,17 @@ class TypingListener(shapes:Array[MyShape], shape:Shapes) extends KeyListener {
 			shapes.last.size += 5
 			shape.repaint()
 		}
+    else if(e.getKeyChar == 's'){
+      println("SSSSS")
+      if(animate){
+        animatoinTimer.stop
+        animate = false
+      }
+      else{
+        animatoinTimer.start
+        animate = true
+      }
+    }
 	}
 	override def keyReleased(e:KeyEvent){}
 }
